@@ -20,16 +20,20 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
-            overflow-x: hidden;
-            width: 100%;
-            position: relative;
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Hero Section - Fixed Position */
@@ -39,8 +43,13 @@
             left: 0;
             width: 100%;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             z-index: 1;
+            /* Force GPU layer for iOS */
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
+            will-change: transform;
         }
 
         /* Background Images */
@@ -59,6 +68,9 @@
             left: 0;
             width: 100%;
             height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+            will-change: transform, opacity;
+            transform: translate3d(0, 0, 0);
         }
 
         .hero-image img {
@@ -70,18 +82,65 @@
 
         #hero1 {
             z-index: 1;
+            opacity: 1;
         }
 
         #hero2 {
             z-index: 2;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(100%, 0, 0);
         }
 
         #hero3 {
             z-index: 3;
-            transform: translateX(-100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(-100%, 0, 0);
+        }
+
+        /* Discrete Phase States */
+        /* Phase 1: Hero 1 */
+        .hero.p1 #hero1 {
+            opacity: 1;
+            transform: scale(1) translate3d(0, 0, 0);
+        }
+
+        .hero.p1 #hero2 {
+            transform: translate3d(100%, 0, 0);
+            opacity: 0;
+        }
+
+        .hero.p1 #hero3 {
+            transform: translate3d(-100%, 0, 0);
+            opacity: 0;
+        }
+
+        /* Phase 2: Hero 2 */
+        .hero.p2 #hero1 {
+            opacity: 0;
+            transform: scale(1.05) translate3d(0, 0, 0);
+        }
+
+        .hero.p2 #hero2 {
+            transform: translate3d(0, 0, 0);
+            opacity: 1;
+        }
+
+        .hero.p2 #hero3 {
+            transform: translate3d(-100%, 0, 0);
+            opacity: 0;
+        }
+
+        /* Phase 3: Hero 3 */
+        .hero.p3 #hero1 {
+            opacity: 0;
+        }
+
+        .hero.p3 #hero2 {
+            transform: translate3d(100%, 0, 0);
+            opacity: 0;
+        }
+
+        .hero.p3 #hero3 {
+            transform: translate3d(0, 0, 0);
+            opacity: 1;
         }
 
         /* Overlay */
@@ -318,11 +377,21 @@
             height: 35px;
         }
 
-        /* Scroll Spacer */
-        .scroll-spacer {
-            height: 480vh;
-            position: relative;
-            z-index: 1;
+        /* Scroll Snap Logic */
+        .snap-point {
+            height: 100vh;
+            height: 100dvh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            pointer-events: none;
+        }
+
+        .about-section,
+        .contact-section,
+        .amenities-section,
+        .master-plan-section,
+        .footer {
+            scroll-snap-align: start;
         }
 
         /* Animations */
@@ -846,64 +915,40 @@
             }
         }
 
-        /* Hero Text Content */
+        /* Hero Text Content Visibility */
         .hero-content {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate3d(-50%, -50%, 0);
             text-align: center;
-            z-index: 8;
+            z-index: 10;
             width: 90%;
             max-width: 900px;
             color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.8s ease;
+            pointer-events: none;
+            will-change: opacity, transform;
+        }
+
+        /* Show content based on active phase */
+        .hero.p1 #heroContent1 {
             opacity: 1;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: visible;
             pointer-events: auto;
         }
 
-        .hero-content.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .hero-content-2 {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 7;
-            width: 90%;
-            max-width: 900px;
-            color: white;
-            opacity: 0;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-        }
-
-        .hero-content-3 {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 6;
-            width: 90%;
-            max-width: 900px;
-            color: white;
-            opacity: 0;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-        }
-
-        .hero-content-2.fade-in {
+        .hero.p2 #heroContent2 {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
         }
 
-        .hero-content-3.fade-in {
+        .hero.p3 #heroContent3 {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
         }
 
@@ -2169,8 +2214,10 @@
         <img src="images/whatsapp.svg" alt="WhatsApp">
     </a>
 
-    <!-- Scroll Spacer to enable scrolling -->
-    <div class="scroll-spacer"></div>
+    <!-- Scroll Snap Points for Hero Sections -->
+    <div class="snap-point" data-phase="1"></div>
+    <div class="snap-point" data-phase="2"></div>
+    <div class="snap-point" data-phase="3"></div>
 
     <!-- About Section -->
     <section class="about-section" id="overview">
@@ -2500,42 +2547,36 @@
         const menuToggle = document.querySelector('.menu-toggle');
         const sidebarClose = document.querySelector('.sidebar-close');
 
-        // Scroll-based animation
+        const hero = document.querySelector('.hero');
+        const snapPoints = document.querySelectorAll('.snap-point');
+
+        // Initial state
+        hero.classList.add('p1');
+
+        // Phase Observer for Hero Animation
+        const phaseObserverOptions = {
+            threshold: 0.5,
+            rootMargin: '0px'
+        };
+
+        const phaseObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const phase = entry.target.getAttribute('data-phase');
+                    // Reset all phase classes
+                    hero.classList.remove('p1', 'p2', 'p3');
+                    // Add current phase class
+                    hero.classList.add(`p${phase}`);
+                }
+            });
+        }, phaseObserverOptions);
+
+        snapPoints.forEach(point => phaseObserver.observe(point));
+
+        // Simplified scroll listener for secondary tasks
         window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const windowHeight = window.innerHeight;
-
-            // Define phases with moderate scroll speed:
-            // Phase 1 (0-120vh): Hero1 -> Hero2 transition
-            // Phase 2 (120-240vh): Hero2 stays visible
-            // Phase 3 (240-360vh): Hero2 -> Hero3 transition
-            // Phase 4 (360-480vh): Hero3 stays visible
-
-            const phase1Progress = Math.min(scrolled / (1.2 * windowHeight), 1); // 0-1 during first 120vh
-            const phase3Progress = Math.max(0, Math.min((scrolled - 2.4 * windowHeight) / (1.2 * windowHeight), 1)); // 0-1 during 240-360vh
-
-            // Phase 1: Hero2 slides in from right
-            const slideAmount2 = 100 - (phase1Progress * 100);
-            hero2.style.transform = `translateX(${slideAmount2}%)`;
-
-            // Phase 3: Hero3 slides in from left
-            // When phase3Progress is 0, hero3 is at -100%, when it's 1, hero3 is at 0%
-            const slideAmount3 = -100 + (phase3Progress * 100);
-            hero3.style.transform = `translateX(${slideAmount3}%)`;
-
-            // Text transitions
-            // Hero1 text fades out during phase 1
-            heroContent1.style.opacity = 1 - phase1Progress;
-
-            // Hero2 text fades in during phase 1, fades out during phase 3
-            heroContent2.style.opacity = phase1Progress * (1 - phase3Progress);
-
-            // Hero3 text fades in during phase 3
-            heroContent3.style.opacity = phase3Progress;
-
-            // Update active navigation link
             updateActiveNavLink();
-        });
+        }, { passive: true });
 
         // Toggle sidebar
         function openSidebar() {
